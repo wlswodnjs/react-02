@@ -2,6 +2,139 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs) <br/>
 
+## 2026.09.23 (Week 4)
+
+### Link Component
+
+`<Link>`는 HTML `<a>` 요소를 확장하여 프리페칭(Prefetching)과 라우트 간 클라이언트 사이드 내비게이션 기능을 제공하는 React 컴포넌트임.
+Next.js에서 라우트 간 이동을 위해 주로 사용되는 방법임.
+
+```TypeScript
+import Link from "next/Link";
+
+export default function Page() {
+  return <Link href="/dashboard">DashBoard</Link>
+}
+```
+
+다음과 같은 prop을 `<Link>` 컴포넌트에 전달할 수 있음.
+
+`href` -> `href="/dashboard"` / Type: String or Object (필수)
+
+`replace` -> `replace={false}` / Type: Boolean
+
+`scroll` -> `scroll={false}` / Type: Boolean
+
+`prefetch` -> `prefetch={false}` / Type: Boolean
+
+`onNavigate` -> `onNavigate={(e) => {}}` / Type: Function
+
+`transitionTypes` -> `transitionTypes={['slide-in']}` / Type: string[]
+
+`href` 속성을 제외한 나머지 속성은 optional임.
+
+### Creating a nested route(중첩 라우트 만들기)
+
+중첩 라우트는 다중 URL 세그먼트로 구성된 라우트임.
+
+예를 들어, `/blog/[slug]` 경로는 세 개의 세그먼트로 구성됨.
+
+- `/` (Root Segment)
+- `blog` (Segment)
+- `[slug]` (Leaf Segment)
+
+Next.js에서
+
+- 폴더는 URL 세그먼트에 매핑되는 경로 세그먼트를 정의하는데 사용됨.
+- 즉 폴더가 URL 세그먼트가 된다는 의미
+- 파일(예: page 및 layout)은 세그먼트에 표시되는 UI를 만드는데 사용됨.
+- 폴더를 중첩하면 중첩된 라우트를 만들 수 있음.
+
+예를 들어 `/blog` 에 대한 경로를 추가하려면 app 디렉터리에 blog라는 폴더를 만들고 `/blog` 에 공개적으로 액세스할 수 있도록 하려면 `page.tsx` 파일을 추가하면 됨.
+
+<img src="https://nextjs.org/_next/image?url=https%3A%2F%2Fh8DxKfmAPhn8O0p3.public.blob.vercel-storage.com%2Fdocs%2Fdark%2Fblog-nested-route.png&w=3840&q=75">
+
+폴더를 계속 중첩하여 중첩된 경로를 만들 수 있음.
+
+예를 들어 특정 블로그 게시물에 대한 경로를 만들려면 blog 안에 새 `[slug]` 폴더를 만들고 page 파일을 추가함.
+
+폴더 이름을 대괄호(예: `[slug]`)로 묶으면 데이터에서 여러 페이지를 생성하는데 사용되는 동적 경로 세그먼트가 생성됨. 예) 블로그 게시물, 제품 페이지 등
+
+<img src="https://nextjs.org/_next/image?url=https%3A%2F%2Fh8DxKfmAPhn8O0p3.public.blob.vercel-storage.com%2Fdocs%2Fdark%2Fnested-layouts.png&w=3840&q=75">
+
+### [slug]의 이해
+
+slug는 사이트의 특정 페이지를 쉽게 읽을 수 있는 형태로 식별하는 URL의 일부
+
+- 신문이나 잡지 등에서 핵심 의미를 포함하는 단어만을 조합해 간단 명료하게 제목을 작성하는 것을 슬러그라고 하는 것에서 유래했음.
+
+문서의 경로 `/blog/[slug]`의 `[slug]` 부분은 불러올 데이터의 key를 말함.
+
+따라서 데이터에는 slug key가 반드시 있어야 함.
+
+```TypeScript
+// posts.ts
+// dummy data
+
+export const posts = [
+  {
+    slug: "nextjs",
+    title: "Next.js 소개",
+    content: "Next.js는 React 기반의 풀스택 프레임워크입니다.",
+  },
+  {
+    slug: "routing",
+    title: "App Router 알아보기",
+    content: "Next.js 13부터는 App Router가 도입되었습니다.",
+  },
+  {
+    slug: "ssr-ssg",
+    title: "SSR vs SSG",
+    content: "서버 사이드 렌더링과 정적 사이트 생성의 차이를 알아봅니다.",
+  },
+  {
+    slug: "dynamic-routes",
+    title: "동적 라우팅",
+    content: "Next.js에서 [slug]를 활용한 라우팅 방식입니다.",
+  },
+];
+```
+
+예를 들어 첫번째 데이터를 호출하는 경우라면 `/blog/nextjs` 라고 호출함.
+
+`[slug]`는 반드시 slug일 필요는 없음. 단, `[foo]`라고 했다면 데이터에 반드시 foo key(필드)가 있어야 함.
+
+### Rendering with search params(검색 매개변수를 사용한 렌더링)
+
+**무엇을 언제 사용해야 할까?**
+
+- 페이지에 대한 데이터를 로드하기 위해 검색 매개변수가 필요한 경우(예: 페이지 매김, 데이터베이스에서 필터링) searchParams prop을 사용함.
+- 검색 매개변수가 클라이언트에서만 사용되는 경우(예: props를 통해 이미 로딩된 목록을 필터링 하는 경우) useSearchParams를 사용함.
+- 콜백이나 이벤트 핸들러에서 new URLSearchParams(window.location.search)를 사용하여 리렌더링을 하지 않고도 검색 매개변수를 읽어올 수 있음.
+
+**searchParams**
+
+- URL의 쿼리 문자열(Query String)을 읽는 방법
+- 예시 URL: `/products?category=shoes&page=2`
+- 여기서 `category=shoes`, `page=2`가 _search parameters_
+- Next.js의 App Router에서 searchParams는 다음과 같이 사용할 수 있음
+
+```TypeScript
+export default function ProductPage({ searchParams }) {
+  return <p>카테고리: {searchParams.category}</p>
+}
+```
+
+### 동적 렌더링
+
+Next.js에서 페이지는 크게 정적(static) 또는 동적(dynamic)으로 렌더링될 수 있음.
+
+searchParams는 요청이 들어와야만 값을 알 수 있기 때문에, Next.js는 이 페이지를 정적으로 미리 생성할 수 없고, 요청이 올 때마다 새로 렌더링해야 함.
+
+따라서 해당 페이지는 자동으로 동적 렌더링(dynamic rendering)으로 처리됨.
+
+즉, searchParams를 사용하는 순간 Next.js는 "이 페이지는 요청이 들어와야 동작하네?" -> "그럼 정적으로 미리 만들 수 없겠다!" 라고 판단함.
+
 ## 2026.09.16 (Week 3)
 
 ### Folder and file conventions (폴더 및 파일 규칙)
