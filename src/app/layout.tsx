@@ -6,15 +6,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html>
       <body>
-        <header>=== Root Layout Header ===</header>
         <nav>
-          <Link href="/">Home</Link> | <Link href="/blog">Blog</Link> |{" "}
-          <Link href="/products">Products</Link>
+          <Link href="/">Home</Link>&nbsp;|&nbsp;
+          {/* Prefetched when the link is hovered or enters the viewport */}
+          <Link href="/blog">Blog</Link>&nbsp;|&nbsp;
+          <Link href="/blog2">Blog2</Link>&nbsp;|&nbsp;
+          {/* No prefetching */}
+          <a href="/contact">Contact</a>
         </nav>
-        <main>{children}</main>
-        <footer>=== Root Layout Footer ===</footer>
+        {children}
       </body>
     </html>
   );

@@ -2,6 +2,178 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs) <br/>
 
+## 2026.09.30 (Week 5)
+
+### 1. How navigation works (네비게이션 작동 방식)
+
+- Server Rendering (서버 렌더링)
+- Prefetching (프리페칭)
+- Streaming (스트리밍)
+- Client-side transitions (클라이언트 측 전환)
+
+#### 1.1 Server Rendering
+
+Next.js에서 레이아웃(layout)과 페이지(page)는 기본적으로 React 서버 컴포넌트.
+
+서버 렌더링에는 <u>발생 시점에 따라 두 가지 유형</u>이 있음.
+
+- <u>**정적 렌더링**</u>(사전 렌더링)은 <u>빌드 시점이나 재검증 중에 발생</u>, <u>결과는 캐시(cache)</u>됨.
+- <u>**동적 렌더링**</u>은 클라이언트 요청에 대한 응답으로 <u>요청 시점에 발생함</u>.
+
+<u>서버 렌더링의 단점</u>은 클라이언트가 새 경로를 표시하기 전에 <u>서버의 응답을 기다려야 한다는 것</u>임.
+
+Next.js는 <u>사용자가 방문할 가능성이 높은 경로를 미리 가져 오고(prefetching)</u>, 클라이언트 측 전환<u>(client-side transitions)</u>을 수행하여 지연 문제를 해결함.
+
+#### HTML is also generated for the initial visit. (최초 방문을 위해서 HTML이 생성됩니다.)
+
+일반적인 React 앱은 CSR만 사용하며, 처음 페이지를 방문할 때는 빈 HTML + JavaScript 파일만 내려주고, 브라우저가 JS를 실행해야 화면이 렌더링됨.
+
+Next.js에서는
+
+- 사용자가 특정 URL을 처음 방문하면(initial visit) 서버가 해당 페이지의 HTML을 미리 생성해서 브라우저에 전달함.
+- 따라서 브라우저는 JS 실행 전에도 즉시 보이는 HTML 뼈대 + 컨텐츠를 표시할 수 있음.
+- 이후에 React가 하이드레이션(hydration) 과정을 거쳐 상호작용이 가능해짐.
+
+즉, 초기 방문 시에도 HTML을 생성해서 내려주기에 사용자 경험(UX)이 좋아지고 SEO에도 유리하다는 의미.
+
+#### 1.2 Prefetching
+
+- 프리페칭은 사용자가 해당 경로로 이동하기 전에 백그라운드에서 해당 경로를 로드하는 프로세스.
+- 사용자가 링크를 클릭하기 전에 다음 경로를 렌더링하는 데 필요한 데이터가 클라이언트 측에 이미 준비되어 있기 때문에 애플리케이션에서 경로 간 이동이 즉각적으로 느껴짐.
+- Next.js는 `<Link>` 컴포넌트와 연결된 경로를 자동으로 사용자 뷰포트에 미리 가져옴.
+- `<a>` tag를 사용하면 프리페칭을 하지 않음.
+
+```TypeScript
+import Link from 'next/link'
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>
+        <nav>
+          {/* Prefetched when the link is hovered or enters the viewport */}
+          <Link href="/blog">Blog</Link>
+          {/* No prefetching */}
+          <a href="/contact">Contact</a>
+        </nav>
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+<img src="https://nextjs.org/_next/image?url=https%3A%2F%2Fh8DxKfmAPhn8O0p3.public.blob.vercel-storage.com%2Fdocs%2Fdark%2Fserver-rendering-without-streaming.png&w=3840&q=75">
+
+경로의 <u>어느 정도를 프리페칭할지는 정적 경로인지 동적 경로인지에 따라</u> 달라짐.
+
+- 정적 경로 : <u>전체 경로</u>가 프리페칭
+- 동적 경로 : 프리페칭을 <u>건너뛰거나</u>, `loading.tsx`가 있는 경우 경로가 <u>부분적으로 프리페칭</u>
+
+Next.js는 동적 라우팅을 건너뛰거나 부분적으로 프리페칭하는 방법으로 <u>사용자가 방문하지 않을 수도 있는 경로</u>에 대한 <u>서버의 불필요한 작업을 방지</u>함.
+
+하지만 네비게이션 전에 서버 응답을 기다리면 <u>사용자에게 앱이 응답하지 않는다는 인상을 줄 수도</u> 있음.
+
+동적 경로에 대한 <u>네비게이션 환경을 개선하려면 `스트리밍`</u>을 사용할 수 있음.
+
+#### 1.3 Streaming
+
+스트리밍을 사용하면 서버가 전체 경로가 렌더링될 때까지 기다리지 않고, 동적 경로의 일부가 준비되는 즉시 클라이언트에 전송할 수 있음.
+
+즉, 페이지의 일부가 아직 로드 중이더라도 사용자는 더 빨리 컨텐츠를 볼 수 있음.
+
+동적 경로의 경우, 부분적으로 미리 가져올 수 있다는 뜻임.
+
+즉, 공유 레이아웃과 로딩 스켈레톤을 미리 요청할 수 있음.
+
+loading skeletons의 의미는 웹 또는 앱에서 컨텐츠가 로드되는 동안 사용자에게 보여지는 빈 화면의 일종임.
+
+<img src="https://nextjs.org/_next/image?url=https%3A%2F%2Fh8DxKfmAPhn8O0p3.public.blob.vercel-storage.com%2Fdocs%2Fdark%2Fserver-rendering-with-streaming.png&w=3840&q=75">
+
+스트리밍을 사용하려면 <u>라우팅 폴더에 `loading.tsx` 파일을 생성</u>
+<img src="https://nextjs.org/_next/image?url=https%3A%2F%2Fh8DxKfmAPhn8O0p3.public.blob.vercel-storage.com%2Fdocs%2Fdark%2Floading-special-file.png&w=3840&q=75">
+
+```TypeScript
+export default function Loading() {
+  // Add fallback UI that will be shown while the route is loading.
+  return <LoadingSkeleton />
+}
+```
+
+Next.js는 내부적으로 page.tsx 컨텐츠를 `<Suspense>` 경계로 자동 래핑.
+
+미리 가져온 <u>대체 UI는 경로가 로드되는 동안 표시</u>되고, 준비가 되면 <u>실제 컨텐츠로 대체</u>됨.
+
+`<Suspense>` 컴포넌트를 사용하여 <u>중첩된 컴포넌트에 대한 로딩 UI를 만들 수도</u> 있음.
+
+**loading.tsx의 이점**
+
+- 사용자에게 <u>즉각적인 네비게이션과 시각적 피드백 제공</u>
+- 공유 레이아웃은 <u>상호 작용 가능</u>, 네비게이션은 중단할 수 있음.
+- 개선된 핵심 웹 핵심 지표: TTFB, FCP 및 TTI
+
+네비게이션 환경을 더욱 개선하기 위해 Next.js는 <u>`<Link>` 컴포넌트를 사용하여 클라이언트 측 전환을 수행</u>함.
+
+#### 1.4 Client-side transitions
+
+일반적으로 서버 렌더링 페이지로 이동하면 전체 페이지가 로드됨.
+
+- 이로 인해 state가 삭제되고, 스크롤 위치가 재설정되며, 상호작용이 차단됨.
+
+Next.js는 `<Link>` 컴포넌트를 사용하는 클라이언트 측 전환을 통해 이를 방지함. 페이지를 다시 로딩하는 대신 다음과 같은 방법으로 컨텐츠를 동적으로 업데이트 함.
+
+공유 레이아웃과 UI를 유지함.
+
+현재 페이지를 미리 가져온(prefetching) 로딩 상태 또는 사용 가능한 경우 새 페이지로 바꿈.
+
+클라이언트 측 전환은 서버에서 렌더링된 앱을 클라이언트에서 렌더링된 앱처럼 느껴지게 하는 요소
+
+또한 프리페칭 및 스트리밍과 함께 사용하면 동적 경로에서도 빠른 전환 가능.
+
+### 2. 전환을 느리게 만드는 요인
+
+- Next.js는 <u>최적화를 통해 네비게이션 속도가 빠르게 반응성이 뛰어남.</u>
+- 하지만 <u>특정 조건에서는 전환 속도가 여전히 느릴 수</u> 있음.
+- 다음은 <u>몇 가지 일반적인 원인과 사용자 경험을 개선하는 방법</u>
+
+#### 2-1 동적 경로 없는 loading.tsx
+
+동적 경로로 이동할 때 클라이언트는 결과를 표시하기 전에 서버의 응답을 기다려야 함.
+
+- 이로 인해 사용자는 앱이 응답하지 않는다는 인상을 받을 수 있음.
+
+부분 프리페칭을 활성화하고, 즉시 네비게이션을 트리거하고, 경로가 렌더링되는 동안 로딩 UI를 표시하려면 동적 경로에 loading.tsx를 추가하는 것이 좋음.
+
+```TypeScript
+export default function Loading() {
+  return <LoadingSkeleton />
+}
+```
+
+#### 2.2 동적 세그먼트 없는 generateStaticParams
+
+- 동적 세그먼트는 사전 렌더링 될 수 있지만, generateStaticParams가 누락되어 사전 렌더링되지 않는 경우, 해당 경로는 요청 시점에 동적 렌더링으로 대체됨.
+- generateStaticParams를 추가하여 빌드 시점에 경로가 정적으로 생성되도록 할 수 있음.
+
+```TypeScript
+export async function generateStaticParams() {
+  const posts = await fetch('https://.../posts').then((res) => res.json())
+
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
+}
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  // ...
+}
+```
+
 ## 2026.09.23 (Week 4)
 
 ### Link Component

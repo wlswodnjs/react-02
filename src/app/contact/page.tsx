@@ -1,7 +1,7 @@
 export default function Home() {
   return (
     <div>
-      <h1>Blog Page - Prefetched</h1>
+      <h1>Contact Page - No Prefetching</h1>
     </div>
   );
 }
