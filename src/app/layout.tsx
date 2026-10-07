@@ -13,6 +13,7 @@ export default function RootLayout({
           {/* Prefetched when the link is hovered or enters the viewport */}
           <Link href="/blog">Blog</Link>&nbsp;|&nbsp;
           <Link href="/blog2">Blog2</Link>&nbsp;|&nbsp;
+          <Link href="/blog3">Blog3</Link>&nbsp;|&nbsp;
           {/* No prefetching */}
           <a href="/contact">Contact</a>
         </nav>

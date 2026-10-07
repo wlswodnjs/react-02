@@ -2,6 +2,82 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs) <br/>
 
+## 2026.10.07 (Week 6)
+
+### await이 없어도 async를 붙여 두는 이유
+
+Next.js 13+의 App Router에서 page.tsx 같은 <u>Server Component는 비동기 렌더링을 전제</u>로 하고 있음.
+
+즉, page.tsx 안에서 <u>데이터를 fetch하는 경우가 많기 때문에</u> async를 기본으로 붙여도 전혀 문제가 없음.
+
+1. 일관성 유지: 같은 프로젝트 안에서 어떤 페이지는 async, 어떤 페이지는 일반 function이면 혼란스러울 수 있음. -> Next.js 공식 문서도 대부분 async function으로 예시를 작성함.
+
+2. 확장성: 지금은 더미 데이터(`posts.find(...)`)를 쓰지만, <u>나중에 DB나 API에서 데이터를 가져올 때 await fetch(...) 같은 코드가 들어갈 수 있기 때문에</u>, 미리 async를 붙여 두면 수정할 필요가 없음.
+
+3. React Server Component 호환성: Server Component는 Promise를 반환할 수 있어야하고, Next.js는 내부적으로 async 함수 패턴에 맞춰 최적화된 렌더링 파이프라인을 갖고 있어서 <u>async가 붙어 있어도 불필요한 오버헤드가 거의 없음.</u>
+
+#### 2.3 느린 네트워크
+
+- 네트워크가 느리거나 불안정한 경우, 링크를 클릭하기 전에 프리페칭이 완료되지 않을 수 있음.
+- 이것은 정적 경로와 동적 경로 모두에 영향을 미칠 수 있음.
+- 이 경우, loading.tsx 파일이 아직 프리페칭되지 않았기 때문에 즉시 표시되지 않을 수 있음.
+- 체감 성능을 개선하기 위해 <u>useLinkStatus Hook을 사용</u>하여 전환이 진행되는 동안 사용자에게 인라인 시각적 피드백을 표시할 수 있음. (링크의 스피너 또는 텍스트 글리머)
+
+```TypeScript
+'use client'
+
+import { useLinkStatus } from 'next/link'
+
+export default function LoadingIndicator() {
+  const { pending } = useLinkStatus()
+  return (
+    <span aria-hidden className={`link-hint ${pending ? 'is-pending' : ''}`} />
+  )
+}
+```
+
+#### 2.4 프리페칭 비활성화
+
+- `<Link>` 컴포넌트에서 prefetch prop을 false로 설정하여 프리페칭을 사용하지 않도록 선택할 수 있음.
+
+- 이는 대량의 링크 목록(예: 무한 스크롤 테이블)을 렌더링할 때 불필요한 리소스 사용을 방지하는데 유용함.
+
+```TypeScript
+<Link prefetch={false} href="/blog">
+  Blog
+</Link>
+```
+
+- 그러나 <u>프리페칭을 비활성화하면 다음과 같은 단점</u>이 있음.
+- <u>정적 라우팅</u>은 사용자가 링크를 클릭할 때만 가져옴.
+- <u>동적 라우팅</u>은 클라이언트가 해당 경로로 이동하기 전에 서버에서 먼저 렌더링 되어야 함.
+- 프리페칭을 완전히 비활성화하지 않고 <u>리소스 사용량을 줄이려면</u>, <u>마우스 호버 시에만 프리페칭을 사용</u>하면 됨.
+- 이렇게 하면 <u>뷰포트의 모든 링크가 아닌</u>, 사용자가 <u>방문할 가능성이 높은 경로로만 프리페칭이 제한</u>됨.
+
+#### 2.5 Hydration이 완료되지 않음
+
+- `<Link>`는 클라이언트 컴포넌트이기 때문에 라우팅 페이지를 <u>프리페칭하기 전에 하이드레이션해야</u> 함.
+- 초기 방문 시 대용량 JS Bundle로 인해 <u>하이드레이션이 지연되어 프리페칭이 바로 시작되지 않을 수</u> 있음.
+- React는 <u>선택적 Hydration을 통해 이를 완화</u>하며, 다음과 같은 방법으로 이를 더욱 개선할 수 있음.
+- `@next/bundle-analyzer` 플러그인을 사용하면 대규모 종속성을 제거하여, <u>번들 크기를 식별하고 줄일 수</u> 있음.
+- 가능하다면 클라이언트에서 서버로 로직을 이동할 것
+
+### 1. Server && Client Component
+
+- client 환경과 server 환경은 서로 다른 기능을 가지고 있음.
+- server 및 client component를 사용하면 사용하는 사례에 따라 각각의 환경에서 필요한 로직을 실행할 수 있음.
+- 다음과 같은 항목이 필요할 경우에는 client component를 사용함.
+  - state 및 event handler -> `onClick`, `onChange`
+  - LifeCycle logic -> `useEffect`
+  - 브라우저 전용 API -> `localStorage`, `window`, `Navigator.geolocation` 등
+  - 사용자 정의 Hook
+
+- 다음과 같은 항목이 필요할 경우에는 server component를 사용
+  - 서버의 데이터베이스 혹은 API에서 data를 가져오는 경우
+  - API key, token 및 기타 보안 데이터를 client에 노출하지 않고 사용
+  - 브라우저로 전송되는 JS의 양을 줄이고 싶을 때 사용
+  - `콘텐츠가 포함된 첫 번째 페인트(First Contentful Paint-FCP)`를 개선하고, 콘텐츠를 client에 점진적으로 스트리밍
+
 ## 2026.09.30 (Week 5)
 
 ### 1. How navigation works (네비게이션 작동 방식)
