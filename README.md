@@ -2,6 +2,14 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs) <br/>
 
+## 2026.10.28 (Week 9)
+
+client JavaScript 번들의 크기를 줄이려면 UI의 큰 부분을 client component로 표시하는 대신 특정 대화형 component에 "use client"를 추가.
+
+예를 들어, 다음 예제의 `<Layout>` component는 로고와 탐색 링크와 같은 정적 요소가 대부분이지만 대화형 검색창이 포함되어 있음.
+
+`<Search />`는 대화형이기 때문에 client component가 되어야 하지만, 나머지 layout은 server component로 유지될 수 있음.
+
 ## 2026.10.14 (Week 7)
 
 ### 낙관적 업데이트 (Optimistic Update)
