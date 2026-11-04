@@ -1,6 +1,37 @@
 # 진재원 202430131
 
-👍 [Next.js 공식 문서](https://nextjs.org/docs) <br/>
+👍 [Next.js 공식 문서](https://nextjs.org/docs)
+
+## 2026.11.04 (Week 10)
+
+인터리빙(Interleaving)은 여러 데이터 블록이나 비트를 섞어서 전송하거나 처리하여 오류 발생 시 영향을 최소화하는 기술.
+
+특히 데이터 통신에서 버스트 오류(연속적인 오류)를 줄이고 오류 정정 코드를 효과적으로 사용하기 위해 사용됨.
+
+server component의 prop를 client component에 전달할 수 있음.
+
+이를 통해 client component 내에서 server에서 렌더링된 UI를 시각적으로 중첩할 수 있음.
+
+### Context
+
+Next.js에서 Context는 React의 Context API를 사용하여 컴포넌트 사이에 데이터를 공유하는 메커니즘
+
+부모 컴포넌트에서 자식 컴포넌트로 직접 props를 전달하지 않고도, 특정 데이터를 필요한 컴포넌트에서 쉽게 접근하고 사용할 수 있도록 도와줌.
+
+#### Context 주요 특징
+
+[전역 상태 관리]
+
+- Context를 사용하면 애플리케이션 전체에서 공유해야 하는 데이터를 중앙 집중적으로 관리할 수 있음. (사용자 정보, 테마 설정 등)
+
+[props drilling 문제 해결]
+
+- 컴포넌트 트리가 깊어질수록 props를 계속 전달해야 하는 번거로움을 줄여줌.
+- Context를 사용하면 필요한 컴포넌트에서 바로 데이터를 가져올 수 있으므로, 코드의 가독성을 높이고 유지 보수를 용이하게 함.
+
+[React Component에서 사용]
+
+- Context는 React에서 제공하는 기능이기 때문에, Next.js에서도 React 컴포넌트를 사용하여 구현함.
 
 ## 2026.10.28 (Week 9)
 
