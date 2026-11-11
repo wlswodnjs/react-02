@@ -2,6 +2,34 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs)
 
+## 2026.11.11 (Week 11)
+
+### Context Provider 동작 순서
+
+1. 사용자가 ThemeStatus의 버튼 클릭
+2. `toggleTheme()` 호출. (ThemeStatus가 Provider의 함수를 호출)
+3. Provider 내부의 `setTheme`이 실행되어 theme 상태가 변경.
+4. 상태 변경으로 Provider와 그 하위 컴포넌트들이 리렌더링되어 theme 값이 최신으로 반영됨.
+5. useEffect가 실행되어 `document.documentElement.dataset.theme` 값도 갱신. (글로벌 스타일 반영)
+
+```text
+RootLayout 렌더
+⬇️
+ThemeProvider 생성 (useState: theme)
+⬇️
+Provider value 제공 -> children 렌더
+⬇️
+ThemeStatus(useContext) 읽음
+⬇️
+사용자 클릭 -> toggleTheme() 호출
+⬇️
+setTheme(newTheme) 실행 (state 변경)
+⬇️
+useEffect 실행 -> document.documentElement.dataset.theme 업데이트
+⬇️
+Provider & Consumer 리렌더 -> UI 갱신
+```
+
 ## 2026.11.04 (Week 10)
 
 인터리빙(Interleaving)은 여러 데이터 블록이나 비트를 섞어서 전송하거나 처리하여 오류 발생 시 영향을 최소화하는 기술.
