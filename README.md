@@ -2,6 +2,80 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs)
 
+## 2026.11.18 (Week 12)
+
+### 1. Fetching Data (데이터 가져오기)
+
+#### 1-1. 서버 컴포넌트
+
+- 서버 컴포넌트에서 데이터를 fetch하는 방법은 두 가지가 있음.
+  1. fetch API
+  2. ORM 또는 데이터베이스
+
+[ 1. fetch API 사용 ]
+
+- 데이터를 가져오려면 fetch API를 사용하여 컴포넌트를 비동기식 함수로 변환하고 다음 fetch의 호출을 기다림.
+
+예를 들어:
+
+```TypeScript
+export default async function Page() {
+  const data = await fetch("https://api.vercel.app/blog");
+  const posts = await data.json();
+  return (
+    <ul>
+      {posts.map((post) => {
+        <li key={post.id}>{post.title}</li>
+      })}
+    </ul>
+  )
+}
+```
+
+> [ 알아두면 좋은 정보 ]
+
+- fetch 응답은 기본적으로 캐싱되지 않음.
+- 그러나 Next.js는 라우팅 페이지를 미리 렌더링 하고, 성능 향상을 위해 출력은 캐싱됨.
+- 동적 렌더링을 사용하려면 `{ cache: 'no-store' }` 옵션을 사용. `[fetch API 참고]`
+- 개발 중에는 가시성과 디버깅을 개선하기 위해 fetch 호출을 기록할 수 있음. `[logging API 참고]`
+- 여담: Next.js 15.1 이후부터 서버 컴포넌트에서 await 없이 fetch를 사용하게 되었음.
+
+[ 2. ORM 또는 데이터베이스 사용 ]
+
+- 서버 컴포넌트는 서버에서 렌더링 되기 때문에 ORM이나 데이터베이스 클라이언트를 사용해서 안전하게 데이터베이스 쿼리를 실행할 수 있음.
+- 컴포넌트를 비동기 함수로 변환하고 호출을 기다리면 됨.
+
+```TypeScript
+import { db, posts } from "@/lib/db";
+
+export default async function Page() {
+  const allPosts = await db.select().from(posts);
+  return (
+    <ul>
+      {allPosts.map((post) => {
+        <li key={post.id}>{post.title}</li>
+      })}
+    <ul/>
+  )
+}
+```
+
+> ORM(Object-Relational Mapping)은 객체 지향 프로그래밍 언어와 관계형 데이터베이스 간의 데이터를 자동으로 변환해주는 기술
+
+### 1.2 클라이언트 컴포넌트
+
+- 클라이언트 컴포넌트에서 데이터를 fetch하는 방법은 두 가지가 있음.
+  1. React의 use Hook
+  2. SWR 또는 React Query 와 같은 통신 라이브러리
+
+[ 1. use Hook을 사용한 스트리밍 데이터 ]
+
+- React의 use Hook을 사용하여 서버에서 클라이언트로 데이터를 스트리밍함.
+- 서버 컴포넌트에서 데이터를 먼저 fetch하고, 그 결과(Promise)를 클라이언트 컴포넌트에 prop으로 전달함.
+- 서버 컴포넌트는 async가 가능하기 때문에 await fetch() 도 사용 가능함.
+- 하지만 클라이언트 컴포넌트에서는 async가 불가능하기 때문에 직접 fetch가 불가능 함. (렌더링 중 fetch 금지)
+- 이런 이유 때문에 서버에서 fetch한 결과를 prop으로 넘기고, 클라이언트에서는 use(Promise)를 써서 데이터를 가져옴.
+
 ## 2026.11.11 (Week 11)
 
 ### Context Provider 동작 순서

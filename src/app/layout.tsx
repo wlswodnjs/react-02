@@ -22,7 +22,8 @@ export default function Layout({
               <Link href="/nextjs">nextjs</Link> &nbsp;|&nbsp;
               <Link href="/routing">routing</Link> &nbsp;|&nbsp;
               <Link href="/ssr-ssg">ssr-ssg</Link> &nbsp;|&nbsp;
-              <Link href="/dynamic-routes">dynamic-routes</Link>
+              <Link href="/dynamic-routes">dynamic-routes</Link> &nbsp;|&nbsp;
+              <Link href="/carousel">carousel</Link> &nbsp;|&nbsp;
               <br />
             </nav>
             <ThemeStatus />
