@@ -2,6 +2,70 @@
 
 👍 [Next.js 공식 문서](https://nextjs.org/docs)
 
+## 2026.11.25 (Week 13)
+
+### Fetch의 이해
+
+[ fetch(url) ]
+
+- `fetch()` 함수는 브라우저의 Fetch API로, HTTP 요청을 보낼 때 사용함.
+- 기본적으로 GET 방식으로 요청을 수행함.
+- 첫 번째 인자로 요청(request)할 URL, 두 번째 인자로 요청 옵션을 전달함.
+- 옵션은 method, headers, body 등이 있음. [참고 문서](https://developer.mozilla.org/ko/docs/Web/API/Fetch_API/Using_Fetch)
+- `Promise<Response>` 객체를 반환함.
+- 응답이 도착하면 `then()`을 통해 결과를 처리함.
+- 성공적으로 응답이 도착하면 `resolve()` 함수가 호출됨.
+- Promise는 네트워크 요청이 완료되면 resolve(성공)됨.
+
+> 알면 좋은점
+>
+> HTTP 상태 코드가 4xx/5xx 이어도 Promise는 reject(오류)되지 않음.
+>
+> 네트워크 에러(통신 오류)가 아니라면 무조건 resolve가 됨.
+>
+> 따라서 404, 500 등의 오류를 처리하려면 예외 처리가 별도로 필요함.
+
+[ .then((res) => ...) ]
+
+- `fetch()`가 반환한 Promise 객체가 `then()` 메서드를 가지고 있음.
+- Promise 객체가 resolve(성공)되면, `then()`의 callback 함수가 실행됨.
+- 여기서 res는 서버에서 반환된 Promise 객체임.
+- Promise 객체는 status, header, body 등 HTTP 응답 전체를 포함함.
+- `res.ok`는 상태 코드가 200~299 인지 불리언(Boolean)으로 알려줌.
+- `res.status`는 숫자로 알려줌. (예: 200, 404)
+- fetch와 마찬가지로 예외 처리는 별도로 해야 함.
+
+```TypeScript
+function getPosts() {
+  return fetch("https://jsonplaceholder.typicode.com/posts").then((res) => {
+    res.json();
+  });
+}
+```
+
+[ res.json() ]
+
+- `res.json()`은 이 Response 객체의 본문(body)를 JSON으로 파싱하는 비동기 함수임.
+- 내부적으로 문자열 형태의 Response body를 읽고, `JSON.parse()`를 수행하여 자바스크립트 객체로 변환함.
+- 이 함수도 Promise를 반환하기 때문에 다시 `then()` 체이닝을 통해 파싱된 데이터를 사용할 수도 있음.
+- 파싱이 완료되면 resolve(성공)되고, 파싱에 실패(유효하지 않은 JSON)하면 reject(거부)됨.
+- Response body는 한 번만 읽을 수 있고 `res.json()` 또는 `res.text()` 등 하나만 사용이 가능함
+- 내부적으로는 response stream -> text -> JSON.parse(text) 처럼 동작함.
+- JSON 파싱 에러의 예외 처리가 필요함.
+
+### Suspense Component
+
+> 비동기 작업 중에 UI의 일부를 일시적으로 대체 UI(fallback)로 보여주어 사용자 경험을 향상시키는 React 기능 (데이터 로딩, 컴포넌트 동적 임포트 등)
+
+[ Suspense의 핵심 기능 ]
+
+- 비동기 작업이 완료될 때까지 해당 컴포넌트 트리 렌더링을 일시 중지함.
+- 작업이 완료되면 실제 UI로 자동 전환함.
+- 비동기 로딩 중 보여 줄 fallback UI(로딩 인디케이터 등)를 지정할 수 있음.
+- import하여 사용함. `import { Suspense } from "react";`
+- Suspense 내부에 여러 개의 컴포넌트가 있을 경우, 내부 컴포넌트 중 하나라도 로딩 중이면 fallback UI가 표시되고, 모든 작업이 완료되면 한번에 실제 UI가 노출됨.
+- 이 기능을 활용하면 여러 비동기 컴포넌트를 독립적으로 대기하거나, 병렬 로딩 상태를 효과적으로 관리할 수 있음.
+
 ## 2026.11.18 (Week 12)
 
 ### 1. Fetching Data (데이터 가져오기)
